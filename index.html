@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html ng-app="JX3CodeApp">
+	<head>
+		<title>JX3 CODE</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<!-- Bootstrap -->
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+
+		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+		<![endif]-->
+	</head>
+	<body ng-controller="JX3CodeController">
+		<section id="accounts" class="container">
+			<h2>全部账号</h2>
+			
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th>账号</th>
+						<th>密码</th>
+						<th>大区</th>
+						<th>状态</th>
+					</tr>
+				</thead>
+				
+				<tfoot>
+					<tr>
+						<th colspan="4" class="text-center"><button type="button" class="btn btn-success btn-xs btn-block" ng-click="AddAccount()"><span class="glyphicon glyphicon-plus"></span> 添加新账号</button></th>
+					</tr>
+				</tfoot>
+				
+				<tbody>
+					<tr ng-repeat="acc in accounts">
+						<td><input type="text" class="form-control" ng-model="acc.usr"></td>
+						<td><input type="password" class="form-control" ng-model="acc.pwd"></td>
+						<td><select class="form-control" ng-model="acc.srv" ng-options="id as name for (id, name) in servers"></select></td>
+						<td>
+							<button type="button" class="btn btn-info" ng-disabled="current_account == acc.usr" ng-click="LoginAccount(acc)">登录</button>
+							<a class="btn text-danger" ng-click="DeleteAccount(acc)"><span class="glyphicon glyphicon-remove"></span></a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+		
+		<section id="actions" class="container">
+			<h2>账号操作</h2>
+			
+			<div class="alert alert-warning" ng-hide="current_account">您还没有登录账号</div>
+			<div ng-show="current_account">
+				<div class="alert alert-success">您当前登录为：<strong ng-show="current_account">{{current_account}} @ {{servers[current_server]}}</strong></div>
+				
+				<button type="button" class="btn btn-success" ng-disabled="!current_account" ng-click="Bingo()">抽奖</button>
+				<button type="button" class="btn btn-info" ng-disabled="!current_account" ng-click="GetAccountCode()">获取兑奖码</button>
+			</div>
+		</section>
+		
+		<section id="codes" class="container">
+			<h2>全部兑奖码</h2>
+			
+			<div class="btn-toolbar">
+				<div class="btn-group">
+					<button type="button" class="btn btn-success" ng-click="BingoAll()">抽取全部账号</button>
+					<button type="button" class="btn btn-info" ng-click="GetAllCode()">获取全部兑奖码</button>
+					<button type="button" class="btn btn-danger" ng-click="ClearAllCode()">删除全部兑换码</button>
+				</div>
+				
+				<div id="award_filter_container" class="btn-group">
+					<button id="award_filter_button" type="button" class="btn btn-default dropdown-toggle">筛选<span class="caret"></span></button>
+					<ul id="award_filter_menu" class="dropdown-menu" style="-webkit-column-count: 2">
+						<li ng-repeat-start="(awardlevel, awardGroupDetail) in awardGroup" class="dropdown-header" style="-webkit-column-span: all">{{awardGroupDetail.title}}</li>
+							<li ng-repeat="awardid in awardGroupDetail.ids">
+								<a href="#" ng-click="AwardFilterSwitch(awardid)"><span class="text-{{awardlevel}}"><span class="glyphicon" ng-class="AwardFilterOn(awardid)"></span> {{awards[awardid]}}</span></a>
+							</li>
+						<li class="divider" ng-if="!$last" ng-repeat-end></li>
+					</ul>
+				</div>
+			</div>
+			
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>账号</th>
+						<th>物品</th>
+						<th>兑奖码</th>
+						<th>状态</th>
+						<th>获得时间</th>
+						<th>最后更新</th>
+					</tr>
+				</thead>
+				
+				<tbody>
+					<tr ng-repeat="code in codes | filter:CodeFilter | orderBy:predicate">
+						<td>{{$index + 1}}</td>
+						<td>{{code.account}} <span class="text-muted">@ {{servers[code.zone]}}</span></td>
+						<td><span class="label label-{{awardLevels[code.type]}}">{{awards[code.type]}}</span></td>
+						<td><code>{{code.code}}</code></td>
+						<td>
+							<span class="label label-success" ng-show="!code.status">未兑换</span>
+							<span class="label label-danger" ng-hide="!code.status">已兑换</span>
+							<a class="btn btn-xs text-muted" ng-show="current_account == code.account" ng-click="CheckCode(code)"><span class="glyphicon glyphicon-refresh"></span></a>
+						</td>
+						<td>{{code.created * 1000 | date:'yyyy-MM-dd'}}</td>
+						<td><abbr title="{{code.updated | date:'yyyy-MM-dd hh:mm:ss'}}" am-time-ago="code.updated"></abbr></td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+		
+		<div id="vcode_form" class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">请输入验证码</h4>
+					</div>
+					<div class="modal-body text-center">
+						<img id="vcode_img" class="img-thumbnail" ng-click="RefreshVCode()" />
+						<input type="text" maxlength="4" class="form-control text-center center-block" id="vcode_input" style="width: 160px; margin-top: 1em;" />
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn" data-dismiss="modal">关闭</button>
+						<button id="vcode_button" type="button" class="btn btn-primary">确定</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="js/jquery.min.js"></script>
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="js/bootstrap.min.js"></script>
+		
+		<script src="js/underscore-min.js"></script>
+		
+		<script src="js/moment.min.js"></script>
+		<script src="js/moment.zh-cn.js"></script>
+		
+		<script src="js/angular.min.js"></script>
+		<script src="js/angular-cookies.min.js"></script>
+		<script src="js/angularLocalStorage.js"></script>
+		<script src="js/angular-moment.min.js"></script>
+		<script src="js/jx3code.js"></script>
+	</body>
+</html>
