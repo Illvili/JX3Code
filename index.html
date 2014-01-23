@@ -52,12 +52,23 @@
 		<section id="actions" class="container">
 			<h2>账号操作</h2>
 			
+			<div class="alert alert-{{weibo_left_tip}}">本小时微博可发送数量为：<strong>{{weibo_left}}</strong><a class="btn btn-xs text-{{weibo_left_tip}}" ng-click="GetWeiboLeft()"><span class="glyphicon glyphicon-refresh"></span></a><span ng-if="0 == weibo_left"> 请等待下一小时</span></div>
 			<div class="alert alert-warning" ng-hide="current_account">您还没有登录账号</div>
 			<div ng-show="current_account">
-				<div class="alert alert-success">您当前登录为：<strong ng-show="current_account">{{current_account}} @ {{servers[current_server]}}</strong></div>
+				<div class="alert alert-success">您当前登录为：<strong ng-show="current_account">{{current_account}} @ {{servers[current_server]}}</strong>，可抽奖次数为：<strong ng-click="CheckLotteryCount()">{{current_lottery}}</strong><a class="btn btn-xs text-success" ng-click="CheckLotteryCount()"><span class="glyphicon glyphicon-refresh"></span></a></div>
 				
-				<button type="button" class="btn btn-success" ng-disabled="!current_account" ng-click="Bingo()">抽奖</button>
-				<button type="button" class="btn btn-info" ng-disabled="!current_account" ng-click="GetAccountCode()">获取兑奖码</button>
+				<div class="btn-toolbar">
+					<div class="btn-group">
+						<button type="button" class="btn btn-success" ng-disabled="!current_account" ng-click="SendWeibo()">转发微博</button>
+						<button type="button" class="btn btn-success" ng-disabled="!current_account || !current_lottery" ng-click="Bingo()">抽奖</button>
+					</div>
+					<div class="btn-group">
+						<button type="button" class="btn btn-info" ng-disabled="!current_account" ng-click="GetAccountCode()">获取兑奖码</button>
+					</div>
+					<div class="btn-group">
+						<button type="button" class="btn btn-danger" ng-disabled="!current_account" ng-click="LogoutAccount()">退出登录</button>
+					</div>
+				</div>
 			</div>
 		</section>
 		
@@ -66,8 +77,8 @@
 			
 			<div class="btn-toolbar">
 				<div class="btn-group">
-					<button type="button" class="btn btn-success" ng-click="BingoAll()">抽取全部账号</button>
-					<button type="button" class="btn btn-info" ng-click="GetAllCode()">获取全部兑奖码</button>
+					<!-- <button type="button" class="btn btn-success" ng-click="BingoAll()">抽取全部账号</button>
+					<button type="button" class="btn btn-info" ng-click="GetAllCode()">获取全部兑奖码</button> -->
 					<button type="button" class="btn btn-danger" ng-click="ClearAllCode()">删除全部兑换码</button>
 				</div>
 				
@@ -128,6 +139,23 @@
 					<div class="modal-footer">
 						<button type="button" class="btn" data-dismiss="modal">关闭</button>
 						<button id="vcode_button" type="button" class="btn btn-primary">确定</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		
+		<div id="bind_weibo_form" class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">请绑定微博账号</h4>
+					</div>
+					<div class="modal-body text-center">
+						<a id="bind_weibo_address" href="" class="btn btn-success" target="_blank">请点此处在新打开的页面完成微博授权</a>
+						<p style="margin-top: 1em;">完成后，请关闭重试</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn" data-dismiss="modal">关闭</button>
 					</div>
 				</div><!-- /.modal-content -->
 			</div><!-- /.modal-dialog -->

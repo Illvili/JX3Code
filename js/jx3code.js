@@ -127,11 +127,15 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 		return !!$scope.awardFilters[code.type];
 	};
 	
-	$scope.predicate = '-type';
+	$scope.predicate = '-created';
 	
 	storage.bind($scope, 'accounts', { defaultValue: [] });
 	$scope.current_account = null;
 	$scope.current_server = null;
+	$scope.current_lottery = 0;
+	
+	$scope.weibo_left = 0;
+	$scope.weibo_left_tip = 'info';
 	
 	storage.bind($scope, 'codes', { defaultValue: [] });
 	
@@ -180,10 +184,39 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 				} else if (1 == data.status) {
 					$scope.current_account = data.tips.user;
 					$scope.current_server = acc.srv;
+					$scope.current_lottery = 0;
 				}
 				
 				update_scrope();
 			});
+		});
+	};
+	
+	$scope.LogoutAccount = function () {
+		jsonp('http://app.jx3.xoyo.com/app/api/passport/logout?callback=', function (data) {
+			if (data.status < 0) {
+				alert(data.tips);
+			} else if (1 == data.status) {
+				$scope.current_account = null;
+				$scope.current_server = null;
+				$scope.current_lottery = 0;
+			}
+			
+			update_scrope();
+		});
+	};
+	
+	$scope.CheckLotteryCount = function () {
+		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/prize/?callback=?&zone=' + $scope.current_server + '&query=1', function (data) {
+			if (-21 == data.status) {
+				alert('请稍后重试');
+			} else if (data.status < 0) {
+				alert(data.tips);
+			} else if (1 == data.status) {
+				$scope.current_lottery = data.tips['1'] + data.tips['2'] + data.tips['3'] + data.tips['4'];
+			}
+			
+			update_scrope();
 		});
 	};
 	
@@ -201,8 +234,66 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 		update_scrope();
 	};
 	
+	$scope.GetWeiboLeft = function () {
+		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/weibo_times?callback=?', function (data) {
+			if (-21 == data.status) {
+				alert('请稍后重试');
+			} else if (data.status < 0) {
+				alert(data.tips);
+			} else if (1 == data.status) {
+				$scope.weibo_left = data.tips.left;
+				$scope.weibo_left_tip = data.tips.left ? 'info' : 'danger';
+			}
+			
+			update_scrope();
+		});
+	};
+	$scope.GetWeiboLeft();
+	
+	$scope.SendWeibo = function () {
+		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/weibo/?callback=?&zone=' + $scope.current_server + '&weibo_type=0', function (data) {
+			if (-21 == data.status) {
+				alert('请稍后重试');
+			} else if (-10 == data.status) {
+				$('#bind_weibo_address').attr('href', data.tips);
+				$('#bind_weibo_form').modal('show');
+			} else if (data.status < 0) {
+				alert(data.tips);
+			} else if (1 == data.status) {
+				alert(data.tips);
+				$scope.CheckLotteryCount();
+			}
+			
+			update_scrope();
+		});
+	};
+	
 	$scope.Bingo = function () {
-		
+		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/prize/?callback=?&zone=' + $scope.current_server, function (data) {
+			if (-21 == data.status) {
+				alert('请稍后重试');
+			} else if (-10 == data.status) {
+				$('#bind_weibo_address').attr('href', data.tips);
+				$('#bind_weibo_form').modal('show');
+			} else if (data.status < 0) {
+				alert(data.tips);
+			} else if (1 == data.status) {
+				var code = data.tips;
+				insert_code({
+					code: code.code,
+					status: 1 * code.code_status,
+					type: code.code_type,
+					account: $scope.current_account,
+					zone: code.zone,
+					created: code.created,
+					updated: +new Date()
+				});
+				
+				alert('恭喜您获得 ' + $scope.awards[code.code_type] + ' ！');
+			}
+			
+			update_scrope();
+		});
 	};
 	
 	function insert_code(code) {
@@ -255,5 +346,5 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 		
 		$scope.codes = [];
 		update_scrope();
-	}
+	};
 });
