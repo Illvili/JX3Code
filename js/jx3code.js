@@ -179,7 +179,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 	$scope.LoginAccount = function (acc) {
 		$scope.PromptVCode(function (code) {
 			jsonp('http://app.jx3.xoyo.com/app/api/passport/login/?callback=?&user=' + acc.usr + '&pass=' + acc.pwd + '&vcode=' + code, function (data) {
-				if (data.status < 0) {
+				if (data.status <= 0) {
 					alert(data.tips);
 				} else if (1 == data.status) {
 					$scope.current_account = data.tips.user;
@@ -290,6 +290,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 				});
 				
 				alert('恭喜您获得 ' + $scope.awards[code.code_type] + ' ！');
+				$scope.CheckLotteryCount();
 			}
 			
 			update_scrope();
