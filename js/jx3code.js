@@ -1,6 +1,8 @@
 var JX3CodeApp = angular.module('JX3CodeApp', ['angularLocalStorage', 'angularMoment']);
 
 JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
+	var app_base_url = 'http://app.jx3.xoyo.com/app/jx3/zlp201402/';
+	
 	function jsonp(url, callback) {
 		$.ajax({
 			url: url,
@@ -207,7 +209,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 	};
 	
 	$scope.CheckLotteryCount = function () {
-		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/prize/?callback=?&zone=' + $scope.current_server + '&query=1', function (data) {
+		jsonp(app_base_url + 'prize/?callback=?&zone=' + $scope.current_server + '&query=1', function (data) {
 			if (-21 == data.status) {
 				alert('请稍后重试');
 			} else if (data.status < 0) {
@@ -235,7 +237,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 	};
 	
 	$scope.GetWeiboLeft = function () {
-		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/weibo_times?callback=?', function (data) {
+		jsonp(app_base_url + 'weibo_times?callback=?', function (data) {
 			if (-21 == data.status) {
 				alert('请稍后重试');
 			} else if (data.status < 0) {
@@ -251,7 +253,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 	$scope.GetWeiboLeft();
 	
 	$scope.SendWeibo = function () {
-		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/weibo/?callback=?&zone=' + $scope.current_server + '&weibo_type=0', function (data) {
+		jsonp(app_base_url + 'weibo/?callback=?&zone=' + $scope.current_server + '&weibo_type=0', function (data) {
 			if (-21 == data.status) {
 				alert('请稍后重试');
 			} else if (-10 == data.status) {
@@ -269,7 +271,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 	};
 	
 	$scope.Bingo = function () {
-		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/prize/?callback=?&zone=' + $scope.current_server, function (data) {
+		jsonp(app_base_url + 'prize/?callback=?&zone=' + $scope.current_server, function (data) {
 			if (-21 == data.status) {
 				alert('请稍后重试');
 			} else if (-10 == data.status) {
@@ -306,7 +308,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 	}
 	
 	$scope.GetAccountCode = function () {
-		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/my_code_prize/?callback=?&zone=' + $scope.current_server, function (data) {
+		jsonp(app_base_url + 'my_code_prize/?callback=?&zone=' + $scope.current_server, function (data) {
 			if (data.status < 0) {
 				alert(data.tips);
 			} else if (1 == data.status) {
@@ -328,7 +330,7 @@ JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
 	};
 	
 	$scope.CheckCode = function (code) {
-		jsonp('http://app.jx3.xoyo.com/app/jx3/zlp201401/query_code_status/?callback=?&code=' + code.code + '&zone=' + code.zone, function (data) {
+		jsonp(app_base_url + 'query_code_status/?callback=?&code=' + code.code + '&zone=' + code.zone, function (data) {
 			if (data.status < 0) {
 				alert(data.tips);
 			} else if (1 == data.status) {
