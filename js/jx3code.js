@@ -1,7 +1,7 @@
 var JX3CodeApp = angular.module('JX3CodeApp', ['angularLocalStorage', 'angularMoment']);
 
 JX3CodeApp.controller('JX3CodeController', function ($scope, $window, storage) {
-	var app_base_url = 'http://app.jx3.xoyo.com/app/jx3/zlp201402/';
+	var app_base_url = 'http://app.jx3.xoyo.com/app/jx3/zlp201404/';
 	
 	function jsonp(url, callback) {
 		$.ajax({
